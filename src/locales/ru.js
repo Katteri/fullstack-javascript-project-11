@@ -7,6 +7,14 @@ export default {
       isNotRSS: 'Ресурс не содержит валидный RSS',
       isRequired: 'Не должно быть пустым',
       isNetworkError: 'Ошибка сети',
+    },
+    ui: {
+      feeds: 'Фиды',
+      posts: 'Посты',
+      buttons: {
+        add: 'Добавить',
+        more: 'Посмотреть',
+      }
     }
   }
 }

@@ -2,13 +2,29 @@ import { string, setLocale } from 'yup';
 import i18next from 'i18next';
 import resources from './locales/index.js';
 import onChange from 'on-change';
-import { renderError } from './view.js';
+import axios from 'axios';
+import { renderError, renderContent, renderModal, renderSubmit } from './view.js';
+import parserRSS from './parser.js';
+
+function getRSS(url) {
+  return axios.get('https://allorigins.hexlet.app/get', {
+    params: {
+      url,
+      disableCache: true,
+    },
+  })
+    .then((response) => response)
+    .catch((error) => {
+      console.log(error);
+      throw error;
+    });
+}
 
 function app(state, i18n) {
   function handleFormStateChanges(state) {
     if (state.form.error) {
       renderError(state, i18n);
-      console.log(state.form);
+      renderSubmit(true);
     }
   }
 
@@ -18,13 +34,18 @@ function app(state, i18n) {
     }
     
     if (watchedState.form.state === 'success') {
-      input.value = '';
-      input.focus();
+      renderError(watchedState, i18n);
+      renderContent(watchedState, i18n);
+      renderSubmit(true);
+    }
+
+    if (watchedState.form.state === 'loading') {
+      renderSubmit();
     }
   });
   
   const form = document.querySelector('form');
-  const input = document.querySelector('input[id=url-input]');
+  const modal = document.querySelector('div[id=modal]');
 
   const schemaRSS = string()
     .url()
@@ -42,16 +63,37 @@ function app(state, i18n) {
     watchedState.form.state = 'loading';
     
     schemaRSS.validate(currentLink)
-      .then(() => {
-        watchedState.data.feeds.push(currentLink);
+      .then(() => getRSS(currentLink))
+      .then((response) => parserRSS(currentLink, response.data, watchedState, i18n))
+      .then(({feed, posts}) => {
         watchedState.form.error = null;
-        watchedState.form.state = 'success';  
-        console.log(watchedState.form);      
+        watchedState.data.feeds.push(feed);
+        watchedState.data.posts = [
+          ...new Set([
+            ...watchedState.data.posts,
+            ...posts,
+          ]),
+        ];
+        watchedState.form.state = 'success';
       })
-      .catch(({ errors }) => {
-        watchedState.form.error = errors;
+      .catch((error) => {
+        watchedState.form.error = error.message;
         watchedState.form.state = 'failed';
       });
+  });
+
+  modal.addEventListener('show.bs.modal', (eventModal) => {
+    const button = eventModal.relatedTarget;
+    const postId = button.getAttribute('data-id');
+    const { posts } = watchedState.data;
+    const post = posts.filter((el) => el.id === postId);
+
+    if (!watchedState.data.readPosts.includes(postId)) {
+      watchedState.data.readPosts.push(postId);
+      renderContent(watchedState, i18n);
+    }
+
+    renderModal(post[0]);
   });
 
   handleFormStateChanges(watchedState);
@@ -75,6 +117,14 @@ export default function runApp () {
       isNotRSS: 'feedbackMessage.isNotRSS',
       isRequired: 'feedbackMessage.isRequired',
       isNetworkError: 'feedbackMessage.isNetworkError',
+    },
+    ui: {
+      feeds: 'ui.feeds',
+      posts: 'ui.posts',
+      buttons: {
+        add: 'ui.buttons.add',
+        more: 'ui.buttons.more',
+      }
     }
   };
 
