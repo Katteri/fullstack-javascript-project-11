@@ -6,27 +6,29 @@
     <title>Hexlet Frontend Project</title>
 </head>
 
-<body>
-</body>
-  <div class="container-fluid bg-dark p-5">
+<body class="d-flex flex-column min-vh-100">
+  <section class="container-fluid bg-dark p-5">
     <div class="row">
       <div class="col-md-10 col-lg-8 mx-auto text-white">
         <h1 class="display-3 mb-0">RSS агрегатор</h1>
         <p class="lead">Начните читать RSS сегодня! Это легко, это красиво.</p>
-        <form>
+        <form class="text-body">
           <div class="row">
             <div class="col">
               <div class="form-floating">
-                <input id="url-input" autofocus required name="url" aria-label="url" class="form-control w-100" placeholder="ссылка RSS" autocomplete="off">
+                <input id="url-input" type="text" class="form-control" name="url" placeholder="Ссылка RSS" required value="">
                 <label for="url-input">Ссылка RSS</label>
-              </div>
+              </div>            
             </div>
             <div class="col-auto">
               <button type="submit" class="h-100 btn btn-lg btn-primary px-sm-5">Добавить</button>
             </div> 
           </div>
-        </form>   
+        </form>
+        <p class="mt-2 mb-0 text-muted">Пример: https://lorem-rss.hexlet.app/feed</p>
+        <p class="feedback m-0 position-absolute small text-danger"></p>  
       </div>
     </div>
-  </div>
+  </section>
+</body>
 </html>
