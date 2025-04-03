@@ -39,9 +39,9 @@ function renderPosts(container, posts, readPosts, textButton) {
     const button = document.createElement('button');
 
     if (readPosts.includes(post.id)) {
-      a.classList.add('fw-noraml', 'link-secondary');
+      a.classList.add('fw-normal', 'link-secondary');
     } else {
-      a.classList.add('fw-normal');
+      a.classList.add('fw-bold');
     }
     li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
