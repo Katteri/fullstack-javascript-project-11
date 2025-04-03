@@ -97,7 +97,10 @@ function app(state, i18n) {
     .test(
       'is-already-in-feeds',
       i18n.t(state.feedbackKeys.isDublicate),
-      (value) => !watchedState.data.feeds.includes(value)
+      (url) => {
+        const urls = watchedState.data.feeds.map((feed) => feed.url);
+        return !urls.includes(url);
+      }
     );
 
   form.addEventListener('submit', (e) => {
