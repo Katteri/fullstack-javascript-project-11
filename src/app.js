@@ -32,6 +32,10 @@ function app(state, i18n) {
     if (path.startsWith('form')) {
       handleFormStateChanges(watchedState);
     }
+
+    if (path.startsWith('modal')) {
+      renderModal(watchedState.modal);
+    }
     
     if (watchedState.form.state === 'success') {
       renderError(watchedState, i18n);
@@ -90,10 +94,19 @@ function app(state, i18n) {
 
     if (!watchedState.data.readPosts.includes(postId)) {
       watchedState.data.readPosts.push(postId);
-      renderContent(watchedState, i18n);
     }
 
-    renderModal(post[0]);
+    watchedState.modal = {
+      state: 'show',
+      post: post[0],
+    };
+  });
+
+  modal.addEventListener('hide.bs.modal', () => {
+    watchedState.modal = {
+      state: 'hide',
+      post: null,
+    };
   });
 
   handleFormStateChanges(watchedState);
@@ -109,6 +122,10 @@ export default function runApp () {
       feeds: [],
       posts: [],
       readPosts: [],
+    },
+    modal: {
+      state: 'hide', // 'show'
+      post: null,
     },
     feedbackKeys: {
       isUrl: 'feedbackMessage.isUrl',

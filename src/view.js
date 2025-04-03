@@ -14,15 +14,20 @@ export function renderError(state, i18n) {
   }
 }
 
-export function renderModal(post) {
+export function renderModal(modal) {
+  if (modal.state == 'hide' || !modal.post) {
+    return;
+  }
+
   const modalContainer = document.getElementById('modal');
   const modalTitle = modalContainer.querySelector('h5.modal-title');
   const modalDescription = modalContainer.querySelector('div.modal-body');
   const modalLinkBtn = modalContainer.querySelector('a.full-article');
 
-  modalTitle.textContent = post.title;
-  modalDescription.textContent = post.description;
-  modalLinkBtn.href = post.link;
+  console.log(modal)
+  modalTitle.textContent = modal.post.title;
+  modalDescription.textContent = modal.post.description;
+  modalLinkBtn.href = modal.post.link;
 }
 
 function renderPosts(container, posts, readPosts, textButton) {
