@@ -20,6 +20,46 @@ function getRSS(url) {
     });
 }
 
+function updateRSS(state, i18n) {
+  console.log('Проверка обновлений RSS...');
+  const { feeds, posts } = state.data;
+  console.log('Текущее количество фидов и постов:', feeds.length, posts.length);
+
+  const promises = feeds.map((feed) => {
+    if (!feed.url) {
+      console.error('URL не определен для RSS-потока:', feed);
+      return Promise.resolve();
+    }
+
+    return getRSS(feed.url)
+      .then((response) => parserRSS(feed.url, response.data, state, i18n))
+      .then(({ posts: fetchPosts }) => {
+        if (!fetchPosts) {
+          return;
+        }
+        
+        state.data.posts = [
+          ...new Set([
+            ...state.data.posts,
+            ...fetchPosts,
+          ]),
+        ];
+        state.form.state = 'success';
+      })
+      .catch((error) => {
+        console.log(error);
+        state.form.error = error.message;
+        state.form.state = 'failed';
+      })
+  });
+
+  Promise.all(promises)
+    .finally(() => {
+      console.log('Проверка обновлений завершена, следующая через 5 сек');
+      setTimeout(() => updateRSS(state, i18n), 5000);
+    });
+}
+
 function app(state, i18n) {
   function handleFormStateChanges(state) {
     if (state.form.error) {
@@ -66,7 +106,7 @@ function app(state, i18n) {
     const currentLink = formData.get('url').trim();
     watchedState.form.state = 'loading';
     
-    schemaRSS.validate(currentLink)
+    return schemaRSS.validate(currentLink)
       .then(() => getRSS(currentLink))
       .then((response) => parserRSS(currentLink, response.data, watchedState, i18n))
       .then(({feed, posts}) => {
@@ -83,6 +123,9 @@ function app(state, i18n) {
       .catch((error) => {
         watchedState.form.error = error.message;
         watchedState.form.state = 'failed';
+      })
+      .finally(() => {
+        console.log('Добавлен новый фид');
       });
   });
 
@@ -110,6 +153,7 @@ function app(state, i18n) {
   });
 
   handleFormStateChanges(watchedState);
+  setTimeout(() => updateRSS(watchedState, i18n), 5000);
 }
 
 export default function runApp () {
