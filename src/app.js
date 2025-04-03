@@ -124,7 +124,7 @@ function app(state, i18n) {
         watchedState.form.state = 'success';
       })
       .catch((error) => {
-        watchedState.form.error = error.message;
+        watchedState.form.error = error.message === 'Network Error'? i18n.t(state.feedbackKeys.isNetworkError) : error.message;
         watchedState.form.state = 'failed';
       })
       .finally(() => {
