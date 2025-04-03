@@ -12,7 +12,7 @@ export default function parserRSS(url, response, state, i18n) {
   }
 
   if (urls.includes(url)) {
-    const feed = state.data.feeds.filter((feed) => feed.url === url);
+    const feed = state.data.feeds.filter((oldFeed) => oldFeed.url === url);
     idFeed = feed[0].id;
   } else {
     idFeed = _.uniqueId();
@@ -23,7 +23,7 @@ export default function parserRSS(url, response, state, i18n) {
   const currentPosts = state.data.posts
     .filter((post) => post.idFeed === idFeed)
     .map((post) => post.link);
-  
+
   const posts = [];
   const items = doc.querySelectorAll('item');
   items.forEach((item) => {
@@ -41,7 +41,7 @@ export default function parserRSS(url, response, state, i18n) {
     posts.push(post);
     currentPosts.push(post.link);
   });
-  
+
   return {
     feed: {
       id: idFeed,
@@ -50,5 +50,5 @@ export default function parserRSS(url, response, state, i18n) {
       url,
     },
     posts,
-  }
+  };
 }

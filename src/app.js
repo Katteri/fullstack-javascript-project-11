@@ -1,9 +1,11 @@
 import { string, setLocale } from 'yup';
 import i18next from 'i18next';
-import resources from './locales/index.js';
 import onChange from 'on-change';
 import axios from 'axios';
-import { renderError, renderContent, renderModal, renderSubmit } from './view.js';
+import resources from './locales/index.js';
+import {
+  renderError, renderContent, renderModal, renderSubmit,
+} from './view.js';
 import parserRSS from './parser.js';
 
 function getRSS(url) {
@@ -20,50 +22,10 @@ function getRSS(url) {
     });
 }
 
-function updateRSS(state, i18n) {
-  console.log('Проверка обновлений RSS...');
-  const { feeds, posts } = state.data;
-  console.log('Текущее количество фидов и постов:', feeds.length, posts.length);
-
-  const promises = feeds.map((feed) => {
-    if (!feed.url) {
-      console.error('URL не определен для RSS-потока:', feed);
-      return Promise.resolve();
-    }
-
-    return getRSS(feed.url)
-      .then((response) => parserRSS(feed.url, response.data, state, i18n))
-      .then(({ posts: fetchPosts }) => {
-        if (!fetchPosts) {
-          return;
-        }
-        
-        state.data.posts = [
-          ...new Set([
-            ...state.data.posts,
-            ...fetchPosts,
-          ]),
-        ];
-        state.form.state = 'success';
-      })
-      .catch((error) => {
-        console.log(error);
-        state.form.error = error.message;
-        state.form.state = 'failed';
-      })
-  });
-
-  Promise.all(promises)
-    .finally(() => {
-      console.log('Проверка обновлений завершена, следующая через 5 сек');
-      setTimeout(() => updateRSS(state, i18n), 5000);
-    });
-}
-
 function app(state, i18n) {
-  function handleFormStateChanges(state) {
-    if (state.form.error) {
-      renderError(state, i18n);
+  function handleFormStateChanges(currentState) {
+    if (currentState.form.error) {
+      renderError(currentState, i18n);
       renderSubmit(true);
     }
   }
@@ -76,7 +38,7 @@ function app(state, i18n) {
     if (path.startsWith('modal')) {
       renderModal(watchedState.modal);
     }
-    
+
     if (watchedState.form.state === 'success') {
       renderError(watchedState, i18n);
       renderContent(watchedState, i18n);
@@ -87,7 +49,47 @@ function app(state, i18n) {
       renderSubmit();
     }
   });
-  
+
+  function updateRSS() {
+    console.log('Проверка обновлений RSS...');
+    const { feeds, posts } = watchedState.data;
+    console.log('Текущее количество фидов и постов:', feeds.length, posts.length);
+
+    const promises = feeds.map((feed) => {
+      if (!feed.url) {
+        console.error('URL не определен для RSS-потока:', feed);
+        return Promise.resolve();
+      }
+
+      return getRSS(feed.url)
+        .then((response) => parserRSS(feed.url, response.data, watchedState, i18n))
+        .then(({ posts: fetchPosts }) => {
+          if (!fetchPosts) {
+            return;
+          }
+
+          watchedState.data.posts = [
+            ...new Set([
+              ...watchedState.data.posts,
+              ...fetchPosts,
+            ]),
+          ];
+          watchedState.form.state = 'success';
+        })
+        .catch((error) => {
+          console.log(error);
+          watchedState.form.error = error.message;
+          watchedState.form.state = 'failed';
+        });
+    });
+
+    Promise.all(promises)
+      .finally(() => {
+        console.log('Проверка обновлений завершена, следующая через 5 сек');
+        setTimeout(() => updateRSS(), 5000);
+      });
+  }
+
   const form = document.querySelector('form');
   const modal = document.querySelector('div[id=modal]');
 
@@ -100,7 +102,7 @@ function app(state, i18n) {
       (url) => {
         const urls = watchedState.data.feeds.map((feed) => feed.url);
         return !urls.includes(url);
-      }
+      },
     );
 
   form.addEventListener('submit', (e) => {
@@ -108,11 +110,11 @@ function app(state, i18n) {
     const formData = new FormData(e.target);
     const currentLink = formData.get('url').trim();
     watchedState.form.state = 'loading';
-    
+
     return schemaRSS.validate(currentLink)
       .then(() => getRSS(currentLink))
       .then((response) => parserRSS(currentLink, response.data, watchedState, i18n))
-      .then(({feed, posts}) => {
+      .then(({ feed, posts }) => {
         watchedState.form.error = null;
         watchedState.data.feeds.push(feed);
         watchedState.data.posts = [
@@ -124,7 +126,7 @@ function app(state, i18n) {
         watchedState.form.state = 'success';
       })
       .catch((error) => {
-        watchedState.form.error = error.message === 'Network Error'? i18n.t(state.feedbackKeys.isNetworkError) : error.message;
+        watchedState.form.error = error.message === 'Network Error' ? i18n.t(state.feedbackKeys.isNetworkError) : error.message;
         watchedState.form.state = 'failed';
       })
       .finally(() => {
@@ -159,7 +161,7 @@ function app(state, i18n) {
   setTimeout(() => updateRSS(watchedState, i18n), 5000);
 }
 
-export default function runApp () {
+export default function runApp() {
   const initialState = {
     form: {
       state: 'filling', // 'loading', 'success', 'failed'
@@ -188,8 +190,8 @@ export default function runApp () {
       buttons: {
         add: 'ui.buttons.add',
         more: 'ui.buttons.more',
-      }
-    }
+      },
+    },
   };
 
   const i18nextInstance = i18next.createInstance();

@@ -15,7 +15,7 @@ export function renderError(state, i18n) {
 }
 
 export function renderModal(modal) {
-  if (modal.state == 'hide' || !modal.post) {
+  if (modal.state === 'hide' || !modal.post) {
     return;
   }
 
@@ -24,15 +24,15 @@ export function renderModal(modal) {
   const modalDescription = modalContainer.querySelector('div.modal-body');
   const modalLinkBtn = modalContainer.querySelector('a.full-article');
 
-  console.log(modal)
   modalTitle.textContent = modal.post.title;
   modalDescription.textContent = modal.post.description;
   modalLinkBtn.href = modal.post.link;
 }
 
-function renderPosts(container, posts, readPosts, textButton) {
+function renderPosts(containerName, posts, readPosts, textButton) {
+  const container = document.querySelector(containerName);
   const ul = container.querySelector('ul');
-  
+
   posts.forEach((post) => {
     const li = document.createElement('li');
     const a = document.createElement('a');
@@ -64,9 +64,10 @@ function renderPosts(container, posts, readPosts, textButton) {
   });
 }
 
-function renderFeeds(container, feeds) {
+function renderFeeds(containerName, feeds) {
+  const container = document.querySelector(containerName);
   const ul = container.querySelector('ul');
-  
+
   feeds.forEach((feed) => {
     const li = document.createElement('li');
     const h3 = document.createElement('h3');
@@ -82,10 +83,11 @@ function renderFeeds(container, feeds) {
     li.appendChild(h3);
     li.appendChild(p);
     ul.appendChild(li);
-  })
+  });
 }
 
-function renderContainer(container, title) {
+function renderContainer(containerName, title) {
+  const container = document.querySelector(containerName);
   const div = document.createElement('div');
   const divName = document.createElement('div');
   const h2 = document.createElement('h2');
@@ -100,8 +102,8 @@ function renderContainer(container, title) {
 
   divName.appendChild(h2);
   div.appendChild(divName);
-  div.appendChild(ul); 
-  
+  div.appendChild(ul);
+
   container.innerHTML = '';
   container.appendChild(div);
 }
@@ -111,14 +113,11 @@ export function renderContent(state, i18n) {
   input.value = '';
   input.focus();
 
-  const containerPosts = document.querySelector('div.posts');
-  const containerFeeds = document.querySelector('div.feeds');  
-  
-  renderContainer(containerPosts, i18n.t(state.ui.posts));
-  renderContainer(containerFeeds, i18n.t(state.ui.feeds));
+  renderContainer('div.posts', i18n.t(state.ui.posts));
+  renderContainer('div.feeds', i18n.t(state.ui.feeds));
 
-  renderPosts(containerPosts, state.data.posts, state.data.readPosts, i18n.t(state.ui.buttons.more));
-  renderFeeds(containerFeeds, state.data.feeds);
+  renderPosts('div.posts', state.data.posts, state.data.readPosts, i18n.t(state.ui.buttons.more));
+  renderFeeds('div.feeds', state.data.feeds);
 }
 
 export function renderSubmit(state = false) {

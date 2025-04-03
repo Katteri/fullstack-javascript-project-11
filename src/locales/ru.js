@@ -14,7 +14,7 @@ export default {
       buttons: {
         add: 'Добавить',
         more: 'Просмотр',
-      }
-    }
-  }
-}
+      },
+    },
+  },
+};
