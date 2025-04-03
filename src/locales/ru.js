@@ -13,7 +13,7 @@ export default {
       posts: 'Посты',
       buttons: {
         add: 'Добавить',
-        more: 'Посмотреть',
+        more: 'Просмотр',
       }
     }
   }

@@ -54,7 +54,7 @@ function renderPosts(container, posts, readPosts, textButton) {
 
     button.setAttribute('data-bs-toggle', 'modal');
     button.setAttribute('data-bs-target', '#modal');
-    button.type = button;
+    button.setAttribute('type', 'button');
     button.dataset.id = post.id;
     button.textContent = textButton;
 
